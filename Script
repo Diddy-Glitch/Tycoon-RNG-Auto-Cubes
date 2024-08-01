@@ -1,0 +1,79 @@
+local Players: Players = game:GetService("Players")
+local UserInputService: UserInputService = game:GetService("UserInputService")
+
+local player: Player = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+local playerGui: PlayerGui = player:WaitForChild("PlayerGui") :: PlayerGui
+
+local autoCubeGui: ScreenGui = Instance.new("ScreenGui")
+autoCubeGui.IgnoreGuiInset = true
+autoCubeGui.ResetOnSpawn = false
+
+local autoCubeFrame: Frame = Instance.new("Frame")
+autoCubeFrame.AnchorPoint = Vector2.new(1, 1)
+autoCubeFrame.BackgroundColor3 = Color3.fromRGB(128, 0, 0)
+autoCubeFrame.BackgroundTransparency = 0.6
+autoCubeFrame.BorderSizePixel = 0
+autoCubeFrame.Position = UDim2.fromScale(0.99, 0.99)
+autoCubeFrame.Size = UDim2.fromScale(0.2, 0.05)
+autoCubeFrame.Parent = autoCubeGui
+
+local headerLabel: TextLabel = Instance.new("TextLabel")
+headerLabel.AnchorPoint = Vector2.new(0.5, 0)
+headerLabel.BackgroundTransparency = 1
+headerLabel.Font = Enum.Font.SourceSansBold
+headerLabel.FontFace.Weight = Enum.FontWeight.Bold
+headerLabel.Position = UDim2.fromScale(0.5, 0)
+headerLabel.Size = UDim2.fromScale(1, 0.5)
+headerLabel.Text = "Auto Cubes"
+headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+headerLabel.TextScaled = true
+headerLabel.Parent = autoCubeFrame
+
+local statusLabel: TextLabel = Instance.new("TextLabel")
+statusLabel.AnchorPoint = Vector2.new(0.5, 1)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Font = Enum.Font.SourceSansBold
+statusLabel.FontFace.Weight = Enum.FontWeight.Bold
+statusLabel.Position = UDim2.fromScale(0.5, 1)
+statusLabel.Size = UDim2.fromScale(1, 0.5)
+statusLabel.Text = "Disabled, press [Y] to toggle."
+statusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+statusLabel.TextScaled = true
+statusLabel.Parent = autoCubeFrame
+
+autoCubeGui.Parent = playerGui
+
+local isEnabled: boolean = false
+
+workspace.ChildAdded:Connect(function(child: Instance)
+	if not isEnabled or not child:IsA("BasePart") then return end
+	
+	local character: Model? = player.Character
+	local humanoid: Humanoid? = if character and character:FindFirstChild("Humanoid") then character:FindFirstChild("Humanoid") :: Humanoid else nil
+	if not character or not humanoid then return end
+	
+	if humanoid.Sit then
+		humanoid.Sit = false
+	end
+	
+	character:PivotTo(child:GetPivot())
+end)
+
+local function toggleAutoCube(input: InputObject)
+	if input.KeyCode ~= Enum.KeyCode.Y then return end
+	
+	if not isEnabled then
+		isEnabled = true
+
+		autoCubeFrame.BackgroundColor3 = Color3.fromRGB(0, 128, 0)
+		statusLabel.Text = "Enabled, press [Y] to toggle."
+		
+	else
+		isEnabled = false
+		
+		autoCubeFrame.BackgroundColor3 = Color3.fromRGB(128, 0, 0)
+		statusLabel.Text = "Disabled, press [Y] to toggle."
+	end
+end
+
+UserInputService.InputBegan:Connect(toggleAutoCube)
